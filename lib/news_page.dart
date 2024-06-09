@@ -34,6 +34,7 @@ class _NewsPageState extends State<NewsPage> {
               ),
             );
           }
+          // assert(notifier.articles.isNotEmpty);
           return ListView.builder(
             itemCount: notifier.articles.length,
             itemBuilder: (_, index) {

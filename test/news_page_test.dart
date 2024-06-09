@@ -28,11 +28,10 @@ void main() {
   }
 
   void arrangeNewsServiceReturns3ArticlesAfter2SecondWait() {
-    when(() => mockNewsService.getArticles())
-        .thenAnswer((_) async {
-          await Future.delayed(const Duration(seconds: 2));
-          return articlesFromService;
-        });
+    when(() => mockNewsService.getArticles()).thenAnswer((_) async {
+      await Future.delayed(const Duration(seconds: 2));
+      return articlesFromService;
+    });
   }
 
   Widget createWidgetUnderTest() {
@@ -59,8 +58,8 @@ void main() {
 
   testWidgets(
     'loading indicator is displayed while waiting for articles',
-        (WidgetTester tester) async {
-          arrangeNewsServiceReturns3ArticlesAfter2SecondWait();
+    (WidgetTester tester) async {
+      arrangeNewsServiceReturns3ArticlesAfter2SecondWait();
 
       //build the page into the invisible UI
       await tester.pumpWidget(createWidgetUnderTest());
@@ -75,17 +74,57 @@ void main() {
 
   testWidgets(
     'articles are displayed',
-        (WidgetTester tester) async {
+    (WidgetTester tester) async {
       arrangeNewsServiceReturns3Articles();
 
       //build the page into the invisible UI
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
 
-      for(final article in articlesFromService){
+      for (final article in articlesFromService) {
         expect(find.text(article.title), findsOneWidget);
         expect(find.text(article.content), findsOneWidget);
-      }},
+      }
+    },
   );
 
+  testWidgets(
+    'articles are scrolled with n number of items',
+    (WidgetTester tester) async {
+      arrangeNewsServiceReturns3Articles();
+
+      //build the page into the invisible UI
+      await tester.pumpWidget(createWidgetUnderTest());
+
+      await tester.drag(find.byType(ListView), const Offset(0, -300));
+      await tester.pump();
+
+      expect(find.text("Test 1"), findsOneWidget);
+      expect(find.byType(ListTile), findsNWidgets(3));
+    },
+  );
+
+  testWidgets('should show only 2 item on small screen size',
+      (WidgetTester tester) async {
+    tester.binding.window.physicalSizeTestValue = Size(720, 720);
+
+    arrangeNewsServiceReturns3Articles();
+
+    //build the page into the invisible UI
+    await tester.pumpWidget(createWidgetUnderTest());
+    await tester.pump();
+
+    expect(find.byType(ListTile), findsNWidgets(2));
+  });
+
+  testWidgets('should throw error if empty list is provided',
+          (WidgetTester tester) async {
+        // arrangeNewsServiceReturns3Articles();
+
+        //build the page into the invisible UI
+        await tester.pumpWidget(createWidgetUnderTest());
+        // await tester.pump();
+
+        expect(tester.takeException(), isAssertionError);
+      });
 }
