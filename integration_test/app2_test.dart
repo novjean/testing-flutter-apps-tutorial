@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_testing_tutorial/article.dart';
-import 'package:flutter_testing_tutorial/article_page.dart';
 import 'package:flutter_testing_tutorial/news_change_notifier.dart';
 import 'package:flutter_testing_tutorial/news_page.dart';
 import 'package:flutter_testing_tutorial/news_service.dart';
@@ -25,7 +24,7 @@ void main() {
 
   void arrangeNewsServiceReturns3Articles() {
     when(() => mockNewsService.getArticles()).thenAnswer(
-      (_) async => articlesFromService,
+          (_) async => articlesFromService,
     );
   }
 
@@ -42,26 +41,42 @@ void main() {
   }
 
   testWidgets(
-    """Tapping on the first article excerpt opens the article page
-    where the full article content is displayed""",
-    (WidgetTester tester) async {
+    """Testing out form and checkbox """,
+        (WidgetTester tester) async {
       arrangeNewsServiceReturns3Articles();
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
 
-      //finding the text within the list tile and tapping on that
-      await tester.tap(find.text('Test 1 content'));
-
-      // use this to wait for all animations to complete
-      // the frame from before does not change anything
+      //finding an email form field and entering the value
+      final emailFormField = find.byKey(Key("email"));
+      await tester.enterText(emailFormField, "something@gmail.com");
       await tester.pumpAndSettle();
 
-      expect(find.byType(NewsPage), findsNothing);
-      expect(find.byType(ArticlePage), findsOneWidget);
-
-      expect(find.text('Test 1'), findsOneWidget);
-      expect(find.text('Test 1 content'), findsOneWidget);
+      // find checkbox
+      final firstCheckBox = find.byType(Checkbox).first;
+      expect(
+        tester.getSemantics(firstCheckBox),
+        matchesSemantics(
+            hasTapAction: true,
+            hasCheckedState: true,
+            isChecked: false,
+            hasEnabledState: true,
+            isEnabled: true,
+            isFocusable: true),
+      );
+      await tester.tap(firstCheckBox);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(firstCheckBox),
+        matchesSemantics(
+            hasTapAction: true,
+            hasCheckedState: true,
+            isChecked: true,
+            hasEnabledState: true,
+            isEnabled: true,
+            isFocusable: true),
+      );
     },
   );
 }
